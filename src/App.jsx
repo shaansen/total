@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BarChart3, ClipboardList, MoreHorizontal, Table2, Users } from 'lucide-react';
 import { useGame } from './lib/useGame';
+import { useTemplates } from './lib/useTemplates';
+import { findTemplate } from './lib/templates';
 import PlayersScreen from './components/PlayersScreen';
 import ScoreScreen from './components/ScoreScreen';
 import SheetScreen from './components/SheetScreen';
 import RanksScreen from './components/RanksScreen';
+import SettingsScreen from './components/SettingsScreen';
+import TemplatePicker from './components/TemplatePicker';
 import { ConfirmDialog, Segmented, Sheet, SheetRow } from './components/ui';
 
 const TABS = [
@@ -22,6 +26,27 @@ export default function App() {
   const [focusRequest, setFocusRequest] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState(null);
+  const [customTemplates, allTemplates, templateActions] = useTemplates();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const activeTemplate =
+    customTemplates.find((t) => t.id === game.template) || findTemplate(game.template);
+
+  const hasScores = Object.values(game.scores).some((row) => Object.keys(row).length > 0);
+
+  /* Applying a template rebuilds the categories, so warn if scores exist. */
+  const chooseTemplate = (template) => {
+    setPickerOpen(false);
+    const apply = () => { actions.applyTemplate(template); setCatIndex(0); };
+    if (!hasScores) return apply();
+    setConfirm({
+      title: template ? `Use the ${template.name} template?` : 'Clear the template?',
+      text: 'The current categories and every score entered are replaced.',
+      confirmLabel: 'Replace categories',
+      onConfirm: apply,
+    });
+  };
 
   const safeCatIndex = Math.min(catIndex, Math.max(0, game.categories.length - 1));
 
@@ -44,6 +69,8 @@ export default function App() {
         actions={actions}
         onConfirm={setConfirm}
         onStart={() => setTab('score')}
+        templateName={activeTemplate?.name}
+        onOpenTemplates={() => setPickerOpen(true)}
       />
     ),
     score: (
@@ -125,6 +152,38 @@ export default function App() {
         ))}
       </nav>
 
+      {settingsOpen && (
+        <div className="fixed inset-0 z-30 flex flex-col bg-bg">
+          <header
+            className="flex items-end justify-between gap-3 border-b border-line px-4 pb-2.5"
+            style={{ paddingTop: 'calc(env(safe-area-inset-top) + 10px)' }}
+          >
+            <h1 className="display text-[22px] leading-tight text-ink">Templates</h1>
+            <button onClick={() => setSettingsOpen(false)} className="px-2 py-1 text-base font-semibold text-accent">
+              Done
+            </button>
+          </header>
+          <div className="min-h-0 flex-1">
+            <SettingsScreen
+              custom={customTemplates}
+              actions={templateActions}
+              onConfirm={setConfirm}
+              onClose={() => setSettingsOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      <TemplatePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        custom={customTemplates}
+        all={allTemplates}
+        current={game.template}
+        onPick={chooseTemplate}
+        onManage={() => { setPickerOpen(false); setSettingsOpen(true); }}
+      />
+
       <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="Options">
         <div className="px-1 pb-3">
           <span className="mb-2 block text-[13px] text-ink2">Winner is</span>
@@ -137,6 +196,10 @@ export default function App() {
             ]}
           />
         </div>
+        <SheetRow
+          title="Templates"
+          onClick={() => { setMenuOpen(false); setSettingsOpen(true); }}
+        />
         <SheetRow
           title="Clear all scores"
           onClick={() => {

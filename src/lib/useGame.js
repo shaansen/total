@@ -8,6 +8,7 @@ const seed = () => ({
   categories: [{ id: uid(), name: '' }],
   scores: {},
   order: 'high',
+  template: null,
 });
 
 function load() {
@@ -19,6 +20,7 @@ function load() {
       categories: s.categories.length ? s.categories : [{ id: uid(), name: '' }],
       scores: s.scores && typeof s.scores === 'object' ? s.scores : {},
       order: s.order === 'low' ? 'low' : 'high',
+      template: s.template ?? null,
     };
   } catch {
     return null;
@@ -75,6 +77,16 @@ export function useGame() {
       }),
 
     setOrder: (order) => setGame((g) => ({ ...g, order })),
+
+    /** Replace the categories with a template's (or clear back to one blank). */
+    applyTemplate: (template) =>
+      setGame((g) => ({
+        ...g,
+        template: template?.id ?? null,
+        categories: (template?.categories ?? ['']).map((name) => ({ id: uid(), name })),
+        scores: {},
+      })),
+
     clearScores: () => setGame((g) => ({ ...g, scores: {} })),
     newGame: () => setGame(seed()),
 

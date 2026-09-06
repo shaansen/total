@@ -7,7 +7,9 @@ to your home screen and it runs full screen and offline.
 
 ## How it works
 
-1. **Players** — go round the table once and add everyone.
+1. **Players** — go round the table once and add everyone. Optionally pick a
+   **template** (Catan, Wingspan, 7 Wonders, Yahtzee, …) and its scoring
+   categories are created for you.
 2. **Score** — one scoring category at a time. Name the category, then ask each
    player in turn and type their points. Every row shows that player's running
    total. **Next category →** moves on; **Finish · totals** stops whenever the
@@ -18,6 +20,10 @@ to your home screen and it runs full screen and offline.
 
 Whole numbers only, negatives via the ± button, blank cells count as 0. Everything
 auto-saves to the browser, and ⋯ switches between highest-wins and lowest-wins.
+
+**Templates** (⋯ → Templates) are editable: write your own for a game, or copy a
+built-in one and adjust it. Your templates are stored in the browser alongside
+the game state.
 
 ## Development
 

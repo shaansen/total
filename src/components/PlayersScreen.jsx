@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Plus, X } from 'lucide-react';
+import { ChevronRight, Plus, X } from 'lucide-react';
 import { Card, PrimaryButton } from './ui';
 import { meepleColor } from '../lib/colors';
 
-export default function PlayersScreen({ game, actions, onStart, onConfirm }) {
+export default function PlayersScreen({ game, actions, onStart, onConfirm, templateName, onOpenTemplates }) {
   const listRef = useRef(null);
   const focusNew = useRef(null);
 
@@ -16,6 +16,17 @@ export default function PlayersScreen({ game, actions, onStart, onConfirm }) {
 
   return (
     <div className="h-full overflow-y-auto px-4 pb-8 pt-4">
+      <button
+        onClick={onOpenTemplates}
+        className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3 text-left transition active:bg-accent/10"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block text-[11px] font-bold uppercase tracking-widest text-ink3">Template (optional)</span>
+          <span className="mt-0.5 block truncate text-[15px] font-semibold">{templateName || 'None'}</span>
+        </span>
+        <ChevronRight size={20} className="shrink-0 text-ink3" />
+      </button>
+
       <Card>
         {game.players.length === 0 && (
           <div className="px-4 py-7 text-center text-sm text-ink3">
