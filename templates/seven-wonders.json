@@ -1,0 +1,13 @@
+{
+  "id": "seven-wonders",
+  "name": "7 Wonders",
+  "categories": [
+    "Military",
+    "Treasury",
+    "Wonder",
+    "Civilian (blue)",
+    "Commercial (yellow)",
+    "Science (green)",
+    "Guilds (purple)"
+  ]
+}

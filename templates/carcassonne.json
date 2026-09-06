@@ -1,0 +1,11 @@
+{
+  "id": "carcassonne",
+  "name": "Carcassonne",
+  "categories": [
+    "Scored during play",
+    "Cities at the end",
+    "Roads at the end",
+    "Cloisters at the end",
+    "Farms"
+  ]
+}

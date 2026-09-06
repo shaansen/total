@@ -1,0 +1,9 @@
+{
+  "id": "ticket-to-ride",
+  "name": "Ticket to Ride",
+  "categories": [
+    "Train routes",
+    "Destination tickets",
+    "Longest continuous path"
+  ]
+}

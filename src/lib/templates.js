@@ -1,76 +1,36 @@
-/* Optional starting points: pick a game and its scoring categories are created
-   for you. Everything stays editable afterwards. */
-export const TEMPLATES = [
-  {
-    id: 'rounds',
-    name: 'Rounds 1–5',
-    note: 'Any game scored per round',
-    categories: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5'],
-  },
-  {
-    id: 'catan',
-    name: 'Catan',
-    categories: ['Settlements & cities', 'Longest road', 'Largest army', 'Victory point cards'],
-  },
-  {
-    id: 'ticket-to-ride',
-    name: 'Ticket to Ride',
-    categories: ['Train routes', 'Destination tickets', 'Longest continuous path'],
-  },
-  {
-    id: 'carcassonne',
-    name: 'Carcassonne',
-    categories: ['Scored during play', 'Cities at the end', 'Roads at the end', 'Cloisters at the end', 'Farms'],
-  },
-  {
-    id: 'wingspan',
-    name: 'Wingspan',
-    categories: ['Birds', 'Bonus cards', 'End-of-round goals', 'Eggs', 'Food on cards', 'Tucked cards'],
-  },
-  {
-    id: 'seven-wonders',
-    name: '7 Wonders',
-    categories: ['Military', 'Treasury', 'Wonder', 'Civilian (blue)', 'Commercial (yellow)', 'Science (green)', 'Guilds (purple)'],
-  },
-  {
-    id: 'splendor',
-    name: 'Splendor',
-    categories: ['Card points', 'Nobles'],
-  },
-  {
-    id: 'azul',
-    name: 'Azul',
-    categories: ['Scored during play', 'Full rows', 'Full columns', 'Colour sets', 'Floor line'],
-  },
-  {
-    id: 'cascadia',
-    name: 'Cascadia',
-    categories: ['Wildlife', 'Habitat corridors', 'Nature tokens'],
-  },
-  {
-    id: 'everdell',
-    name: 'Everdell',
-    categories: ['Cards', 'Point tokens', 'Prosperity', 'Events', 'Journey'],
-  },
-  {
-    id: 'terraforming-mars',
-    name: 'Terraforming Mars',
-    categories: ['Terraform rating', 'Awards', 'Milestones', 'Cities & greenery', 'Card points'],
-  },
-  {
-    id: 'scythe',
-    name: 'Scythe',
-    categories: ['Coins', 'Stars', 'Territories', 'Resources', 'Structure bonus'],
-  },
-  {
-    id: 'yahtzee',
-    name: 'Yahtzee',
-    categories: [
-      'Ones', 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes', 'Upper bonus',
-      'Three of a kind', 'Four of a kind', 'Full house',
-      'Small straight', 'Large straight', 'Yahtzee', 'Chance',
-    ],
-  },
-];
+/* Templates live in /templates as one JSON file per game and are bundled at
+   build time, so adding or editing a file and pushing to main is all it takes
+   to publish a new one.
+
+   File shape:
+     {
+       "id": "catan",              // unique, kebab-case; the filename usually matches
+       "name": "Catan",            // shown in the picker
+       "note": "optional blurb",   // optional; falls back to the category count
+       "order": 0,                 // optional; lower sorts first, default 100
+       "categories": ["Settlements & cities", "Longest road"]
+     }
+*/
+const files = import.meta.glob('../../templates/*.json', { eager: true });
+
+function normalise(raw, path) {
+  const fallbackId = path.split('/').pop().replace(/\.json$/, '');
+  const categories = Array.isArray(raw?.categories)
+    ? raw.categories.map((c) => String(c).trim()).filter(Boolean)
+    : [];
+  if (!categories.length) return null;
+  return {
+    id: String(raw.id || fallbackId),
+    name: String(raw.name || fallbackId),
+    note: raw.note ? String(raw.note) : '',
+    order: Number.isFinite(raw.order) ? raw.order : 100,
+    categories,
+  };
+}
+
+export const TEMPLATES = Object.entries(files)
+  .map(([path, mod]) => normalise(mod.default ?? mod, path))
+  .filter(Boolean)
+  .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
 
 export const findTemplate = (id) => TEMPLATES.find((t) => t.id === id) || null;

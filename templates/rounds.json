@@ -1,0 +1,13 @@
+{
+  "id": "rounds",
+  "name": "Rounds 1–5",
+  "note": "Any game scored per round",
+  "order": 0,
+  "categories": [
+    "Round 1",
+    "Round 2",
+    "Round 3",
+    "Round 4",
+    "Round 5"
+  ]
+}

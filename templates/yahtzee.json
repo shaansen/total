@@ -1,0 +1,20 @@
+{
+  "id": "yahtzee",
+  "name": "Yahtzee",
+  "categories": [
+    "Ones",
+    "Twos",
+    "Threes",
+    "Fours",
+    "Fives",
+    "Sixes",
+    "Upper bonus",
+    "Three of a kind",
+    "Four of a kind",
+    "Full house",
+    "Small straight",
+    "Large straight",
+    "Yahtzee",
+    "Chance"
+  ]
+}
