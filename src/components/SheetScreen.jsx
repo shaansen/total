@@ -6,23 +6,23 @@ export default function SheetScreen({ game, onEditCell }) {
     return <div className="px-6 py-10 text-center text-sm text-ink3">No players yet</div>;
   }
 
-  const nameCol = 132;
+  const nameCol = 108;
   const best = bestTotal(game);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="no-scrollbar min-h-0 flex-1 overflow-auto px-3 pb-4 pt-3">
+    <div className="px-3 py-3">
+      <div className="no-scrollbar overflow-x-auto">
         <div
           className="grid w-max min-w-full overflow-hidden rounded-2xl border border-line bg-surface"
-          style={{ gridTemplateColumns: `${nameCol}px repeat(${game.players.length}, minmax(84px, 1fr))` }}
+          style={{ gridTemplateColumns: `${nameCol}px repeat(${game.players.length}, minmax(74px, 1fr))` }}
         >
-          <div className="sticky left-0 top-0 z-30 border-b border-r border-line bg-surface2 px-3 py-3 text-[11px] font-bold uppercase tracking-widest text-ink2">
+          <div className="sticky left-0 z-20 border-b border-r border-line bg-surface2 px-3 py-3 text-[11px] font-bold uppercase tracking-widest text-ink2">
             Category
           </div>
           {game.players.map((p, i) => (
             <div
               key={p.id}
-              className={`sticky top-0 z-20 border-b border-line bg-surface2 px-2 pb-2 pt-3 text-center ${
+              className={`border-b border-line bg-surface2 px-2 pb-2 pt-3 text-center ${
                 i === game.players.length - 1 ? '' : 'border-r'
               }`}
             >
@@ -35,7 +35,7 @@ export default function SheetScreen({ game, onEditCell }) {
             <Row key={cat.id} game={game} cat={cat} ci={ci} onEditCell={onEditCell} />
           ))}
 
-          <div className="sticky bottom-0 left-0 z-30 border-r border-t-2 border-line bg-surface2 px-3 py-3 text-[11px] font-bold uppercase tracking-widest text-ink2">
+          <div className="sticky left-0 z-10 border-r border-t-2 border-line bg-surface2 px-3 py-3 text-[11px] font-bold uppercase tracking-widest text-ink2">
             Total
           </div>
           {game.players.map((p, i) => {
@@ -44,7 +44,7 @@ export default function SheetScreen({ game, onEditCell }) {
             return (
               <div
                 key={p.id}
-                className={`tnum sticky bottom-0 z-20 border-t-2 border-line bg-surface2 px-2 py-3 text-center text-lg font-extrabold ${
+                className={`tnum border-t-2 border-line bg-surface2 px-2 py-3 text-center text-lg font-extrabold ${
                   i === game.players.length - 1 ? '' : 'border-r'
                 } ${leader ? 'text-accent' : 'text-ink'}`}
               >

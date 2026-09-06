@@ -36,6 +36,8 @@ node test-score.mjs      # checks the maths: totals, ties, ranking, input parsin
 node test-templates.mjs # validates every file in templates/
 ```
 
-Stack: React + Vite + Tailwind CSS, Radix dialogs, vite-plugin-pwa for the
-manifest and service worker. Pushing to `main` builds and deploys via GitHub
+Stack: React + Vite, Ionic React for the app chrome (safe areas, scrolling,
+keyboard-aware modals), Tailwind CSS for styling, vite-plugin-pwa for the
+manifest and service worker. `npm run shots` drives the app in a headless
+iPhone with Playwright and writes a screenshot of every screen, light and dark. Pushing to `main` builds and deploys via GitHub
 Actions (`.github/workflows/deploy.yml`).

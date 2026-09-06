@@ -15,7 +15,7 @@ export default function PlayersScreen({ game, actions, onStart, onConfirm, templ
   }, [game.players.length]);
 
   return (
-    <div className="h-full overflow-y-auto px-4 pb-8 pt-4">
+    <div className="px-4 pb-8 pt-4">
       <button
         onClick={onOpenTemplates}
         className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3 text-left transition active:bg-accent/10"

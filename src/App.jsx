@@ -1,14 +1,18 @@
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useRef, useState } from 'react';
+import {
+  IonAlert, IonApp, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonLabel,
+  IonPage, IonTabBar, IonTabButton, IonTitle, IonToolbar,
+} from '@ionic/react';
 import { BarChart3, ClipboardList, MoreHorizontal, Table2, Users } from 'lucide-react';
 import { useGame } from './lib/useGame';
 import { findTemplate } from './lib/templates';
 import PlayersScreen from './components/PlayersScreen';
-import ScoreScreen from './components/ScoreScreen';
+import { CategoryBar, ScoreActions, ScoreList } from './components/ScoreScreen';
 import SheetScreen from './components/SheetScreen';
 import RanksScreen from './components/RanksScreen';
 import TemplatePicker from './components/TemplatePicker';
-import { ConfirmDialog, Segmented, Sheet, SheetRow } from './components/ui';
+import OptionsModal from './components/OptionsModal';
+import { PrimaryButton } from './components/ui';
 
 const TABS = [
   { id: 'players', label: 'Players', icon: Users },
@@ -21,14 +25,21 @@ export default function App() {
   const [game, actions] = useGame();
   const [tab, setTab] = useState(() => (game.players.length ? 'score' : 'players'));
   const [catIndex, setCatIndex] = useState(0);
-  const [focusRequest, setFocusRequest] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState(null);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const fieldsRef = useRef([]);
 
+  const safeCatIndex = Math.min(catIndex, Math.max(0, game.categories.length - 1));
   const activeTemplate = findTemplate(game.template);
-
   const hasScores = Object.values(game.scores).some((row) => Object.keys(row).length > 0);
+  const scoring = tab === 'score' && game.players.length > 0;
+
+  const goToCategory = (index) => {
+    if (index > game.categories.length - 1) actions.addCategory();
+    setCatIndex(Math.max(0, index));
+    requestAnimationFrame(() => fieldsRef.current[0]?.focus());
+  };
 
   /* Applying a template rebuilds the categories, so warn if scores exist. */
   const chooseTemplate = (template) => {
@@ -36,172 +47,157 @@ export default function App() {
     const apply = () => { actions.applyTemplate(template); setCatIndex(0); };
     if (!hasScores) return apply();
     setConfirm({
-      title: template ? `Use the ${template.name} template?` : 'Clear the template?',
-      text: 'The current categories and every score entered are replaced.',
-      confirmLabel: 'Replace categories',
+      header: template ? `Use the ${template.name} template?` : 'Clear the template?',
+      message: 'The current categories and every score entered are replaced.',
+      confirmLabel: 'Replace',
       onConfirm: apply,
     });
   };
 
-  const safeCatIndex = Math.min(catIndex, Math.max(0, game.categories.length - 1));
-
   const subtitle = {
     players: `${game.players.length} ${game.players.length === 1 ? 'player' : 'players'}`,
-    score: `${game.players.length} players · category ${safeCatIndex + 1} of ${game.categories.length}`,
+    score: `${game.players.length} ${game.players.length === 1 ? 'player' : 'players'} · ${game.categories.length} ${game.categories.length === 1 ? 'category' : 'categories'}`,
     sheet: `${game.players.length} × ${game.categories.length}`,
     ranks: game.order === 'low' ? 'lowest total wins' : 'highest total wins',
   }[tab];
 
-  const finish = () => {
-    actions.pruneEmpty();
-    setTab('ranks');
-  };
-
-  const screens = {
+  const body = {
     players: (
       <PlayersScreen
         game={game}
         actions={actions}
-        onConfirm={setConfirm}
+        onConfirm={(r) => setConfirm({ header: r.title, message: r.text, confirmLabel: r.confirmLabel, onConfirm: r.onConfirm })}
         onStart={() => setTab('score')}
         templateName={activeTemplate?.name}
         onOpenTemplates={() => setPickerOpen(true)}
       />
     ),
-    score: (
-      <ScoreScreen
+    score: game.players.length ? (
+      <ScoreList
         game={game}
         actions={actions}
         catIndex={safeCatIndex}
-        setCatIndex={setCatIndex}
-        focusRequest={focusRequest}
-        onDone={finish}
-        onGoPlayers={() => setTab('players')}
-        onConfirm={setConfirm}
+        fieldsRef={fieldsRef}
+        onAdvance={() => goToCategory(safeCatIndex + 1)}
       />
+    ) : (
+      <div className="flex flex-col items-center gap-3 px-8 py-16">
+        <PrimaryButton onClick={() => setTab('players')}>Add players</PrimaryButton>
+      </div>
     ),
-    sheet: (
-      <SheetScreen
-        game={game}
-        onEditCell={(ci, playerId) => {
-          setCatIndex(ci);
-          setFocusRequest({ playerId, at: Date.now() });
-          setTab('score');
-        }}
-      />
-    ),
+    sheet: <SheetScreen game={game} onEditCell={(ci, playerId) => {
+      setCatIndex(ci);
+      setTab('score');
+      const i = game.players.findIndex((p) => p.id === playerId);
+      requestAnimationFrame(() => fieldsRef.current[i]?.focus());
+    }} />,
     ranks: <RanksScreen game={game} />,
-  };
+  }[tab];
 
   return (
-    /* fixed inset-0 pins the shell to the real viewport edges: with 100dvh the
-       tab bar could stop short of the bottom in standalone mode */
-    <div className="fixed inset-0 flex flex-col">
-      <header
-        className="flex items-end justify-between gap-3 border-b border-line px-4 pb-2.5"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 10px)' }}
-      >
-        <div>
-          <h1 className="display text-[22px] leading-tight text-ink">
-            {TABS.find((t) => t.id === tab).label}
-          </h1>
-          <span className="mt-0.5 block text-xs text-ink3">{subtitle}</span>
-        </div>
-        <button
-          aria-label="Options"
-          onClick={() => setMenuOpen(true)}
-          className="grid size-10 place-items-center rounded-full text-ink2 transition active:bg-accent/10"
-        >
-          <MoreHorizontal size={22} />
-        </button>
-      </header>
+    <IonApp>
+      <IonPage>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>
+              <span className="display text-[19px]">{TABS.find((t) => t.id === tab).label}</span>
+              <span className="ml-2 text-[11px] font-medium text-ink3">{subtitle}</span>
+            </IonTitle>
+            <IonButtons slot="end">
+              <IonButton aria-label="Options" onClick={() => setMenuOpen(true)}>
+                <MoreHorizontal size={22} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
 
-      <main className="relative min-h-0 flex-1">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.14 }}
-            className="absolute inset-0"
-          >
-            {screens[tab]}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+          {scoring && (
+            <IonToolbar>
+              <CategoryBar
+                game={game}
+                actions={actions}
+                catIndex={safeCatIndex}
+                onPrev={() => goToCategory(safeCatIndex - 1)}
+                onNext={() => goToCategory(safeCatIndex + 1)}
+              />
+            </IonToolbar>
+          )}
+        </IonHeader>
 
-      <nav
-        className="grid grid-cols-4 border-t border-line bg-surface"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      >
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            className={`flex flex-col items-center gap-1 py-2 text-[10.5px] font-semibold transition ${
-              tab === id ? 'text-accent' : 'text-ink3'
-            }`}
-          >
-            <Icon size={21} strokeWidth={tab === id ? 2.3 : 1.9} />
-            {label}
-          </button>
-        ))}
-      </nav>
+        <IonContent>{body}</IonContent>
+
+        <IonFooter>
+          {scoring && (
+            <IonToolbar>
+              <ScoreActions
+                canDelete={game.categories.length > 1}
+                onDelete={() => setConfirm({
+                  header: `Delete "${game.categories[safeCatIndex].name || 'this category'}"?`,
+                  message: 'Every score in it is removed.',
+                  confirmLabel: 'Delete',
+                  onConfirm: () => {
+                    actions.removeCategory(game.categories[safeCatIndex].id);
+                    setCatIndex(Math.max(0, Math.min(safeCatIndex, game.categories.length - 2)));
+                  },
+                })}
+                onFinish={() => { actions.pruneEmpty(); setTab('ranks'); }}
+                onNext={() => goToCategory(safeCatIndex + 1)}
+              />
+            </IonToolbar>
+          )}
+
+          <IonTabBar>
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <IonTabButton key={id} tab={id} selected={tab === id} onClick={() => setTab(id)}>
+                <Icon size={21} strokeWidth={tab === id ? 2.3 : 1.9} />
+                <IonLabel>{label}</IonLabel>
+              </IonTabButton>
+            ))}
+          </IonTabBar>
+        </IonFooter>
+      </IonPage>
 
       <TemplatePicker
         open={pickerOpen}
-        onOpenChange={setPickerOpen}
+        onClose={() => setPickerOpen(false)}
         current={game.template}
         onPick={chooseTemplate}
       />
 
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen} title="Options">
-        <div className="px-1 pb-3">
-          <span className="mb-2 block text-[13px] text-ink2">Winner is</span>
-          <Segmented
-            value={game.order}
-            onChange={actions.setOrder}
-            options={[
-              { value: 'high', label: 'Highest total' },
-              { value: 'low', label: 'Lowest total' },
-            ]}
-          />
-        </div>
-        <SheetRow
-          title="Clear all scores"
-          onClick={() => {
-            setMenuOpen(false);
-            setConfirm({
-              title: 'Clear all scores?',
-              text: 'Every number goes back to 0.',
-              confirmLabel: 'Clear scores',
-              onConfirm: actions.clearScores,
-            });
-          }}
-        />
-        <SheetRow
-          danger
-          title="New game"
-          onClick={() => {
-            setMenuOpen(false);
-            setConfirm({
-              title: 'Start a new game?',
-              text: 'Players, categories and scores are all removed.',
-              confirmLabel: 'Start new game',
-              onConfirm: () => { actions.newGame(); setCatIndex(0); setTab('players'); },
-            });
-          }}
-        />
-        <button
-          onClick={() => setMenuOpen(false)}
-          className="block w-full rounded-2xl py-3.5 text-center text-base font-semibold text-accent"
-        >
-          Close
-        </button>
-      </Sheet>
+      <OptionsModal
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        order={game.order}
+        onOrder={actions.setOrder}
+        onClearScores={() => {
+          setMenuOpen(false);
+          setConfirm({
+            header: 'Clear all scores?',
+            message: 'Every number goes back to 0.',
+            confirmLabel: 'Clear',
+            onConfirm: actions.clearScores,
+          });
+        }}
+        onNewGame={() => {
+          setMenuOpen(false);
+          setConfirm({
+            header: 'Start a new game?',
+            message: 'Players, categories and scores are all removed.',
+            confirmLabel: 'Start new',
+            onConfirm: () => { actions.newGame(); setCatIndex(0); setTab('players'); },
+          });
+        }}
+      />
 
-      <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />
-    </div>
+      <IonAlert
+        isOpen={!!confirm}
+        header={confirm?.header}
+        message={confirm?.message}
+        onDidDismiss={() => setConfirm(null)}
+        buttons={[
+          { text: 'Cancel', role: 'cancel' },
+          { text: confirm?.confirmLabel || 'OK', role: 'destructive', handler: () => confirm?.onConfirm?.() },
+        ]}
+      />
+    </IonApp>
   );
 }

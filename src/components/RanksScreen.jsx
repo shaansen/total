@@ -23,12 +23,7 @@ export default function RanksScreen({ game }) {
   const leader = rows[0].total;
 
   return (
-    <div className="h-full overflow-y-auto px-4 pb-8 pt-4">
-      <div className="mb-3 flex items-baseline justify-between px-1">
-        <h2 className="text-[17px] font-bold">Standings</h2>
-        <span className="text-xs text-ink3">{game.order === 'low' ? 'Lowest total wins' : 'Highest total wins'}</span>
-      </div>
-
+    <div className="px-4 pb-8 pt-4">
       <Card>
         {rows.map((r) => {
           /* bar length shows standing: the leader is always full width */
@@ -49,7 +44,7 @@ export default function RanksScreen({ game }) {
               <div className="col-start-2 col-end-4 h-2 overflow-hidden rounded-full bg-surface2">
                 <div
                   className="h-full rounded-full"
-                  style={{ width: `${Math.max(3, Math.round(frac * 100))}%`, backgroundColor: meepleColor(seat[r.id] ?? 0) }}
+                  style={{ width: `${Math.max(6, Math.round(frac * 100))}%`, backgroundColor: meepleColor(seat[r.id] ?? 0) }}
                 />
               </div>
             </div>
