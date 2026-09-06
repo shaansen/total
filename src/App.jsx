@@ -94,7 +94,9 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-[100dvh] flex-col">
+    /* fixed inset-0 pins the shell to the real viewport edges: with 100dvh the
+       tab bar could stop short of the bottom in standalone mode */
+    <div className="fixed inset-0 flex flex-col">
       <header
         className="flex items-end justify-between gap-3 border-b border-line px-4 pb-2.5"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 10px)' }}
