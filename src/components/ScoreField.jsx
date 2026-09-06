@@ -43,7 +43,11 @@ const ScoreField = forwardRef(function ScoreField({ value, onChange, onEnter, cl
       spellCheck={false}
       value={text}
       onChange={(e) => write(e.target.value)}
-      onFocus={(e) => e.target.select()}
+      onFocus={(e) => {
+        e.target.select();
+        /* iOS raises the keyboard after focus, so scroll once it is up */
+        setTimeout(() => e.target?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+      }}
       onBlur={() => setText(sanitize(text).value === null ? '0' : sanitize(text).text)}
       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter?.(); } }}
       className={`tnum w-[86px] shrink-0 rounded-xl border border-line bg-surface2 px-1 py-2.5

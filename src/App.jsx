@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BarChart3, ClipboardList, MoreHorizontal, Table2, Users } from 'lucide-react';
 import { useGame } from './lib/useGame';
@@ -22,17 +22,6 @@ export default function App() {
   const [focusRequest, setFocusRequest] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState(null);
-
-  /* keep the toolbar above the iPhone keyboard */
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const fit = () => { document.body.style.height = `${Math.round(vv.height)}px`; };
-    fit();
-    vv.addEventListener('resize', fit);
-    vv.addEventListener('scroll', fit);
-    return () => { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); };
-  }, []);
 
   const safeCatIndex = Math.min(catIndex, Math.max(0, game.categories.length - 1));
 
@@ -83,7 +72,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-[100dvh] flex-col">
       <header
         className="flex items-end justify-between gap-3 border-b border-line px-4 pb-2.5"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 10px)' }}

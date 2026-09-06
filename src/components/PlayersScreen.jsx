@@ -36,6 +36,7 @@ export default function PlayersScreen({ game, actions, onStart, onConfirm }) {
                 value={p.name}
                 placeholder={`Player ${i + 1}`}
                 onChange={(e) => actions.renamePlayer(p.id, e.target.value)}
+                onFocus={(e) => setTimeout(() => e.target?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)}
                 onBlur={(e) => { if (!e.target.value.trim()) actions.renamePlayer(p.id, `Player ${i + 1}`); }}
                 className="min-w-0 flex-1 bg-transparent py-2 text-[17px] font-semibold outline-none placeholder:font-medium placeholder:text-ink3"
               />
