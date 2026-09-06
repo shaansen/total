@@ -1,4 +1,23 @@
+import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+
+/* How much of the layout viewport the on-screen keyboard is covering. */
+function useKeyboardInset() {
+  const [inset, setInset] = useState(0);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return undefined;
+    const update = () => setInset(Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)));
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
+  return inset;
+}
 
 export function Card({ className = '', children }) {
   return (
@@ -29,16 +48,22 @@ export function GhostButton({ className = '', ...props }) {
 }
 
 export function Sheet({ open, onOpenChange, title, children }) {
+  const keyboard = useKeyboardInset();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=open]:fade-in" />
         <Dialog.Content
-          className="fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom)+8px)] z-50 mx-auto
-            max-w-[520px] rounded-3xl border border-line bg-surface p-4 shadow-2xl outline-none"
+          className="fixed inset-x-2 z-50 mx-auto flex max-w-[520px] flex-col overflow-hidden
+            rounded-3xl border border-line bg-surface p-4 shadow-2xl outline-none"
+          style={{
+            /* ride above the keyboard, and never grow past what is visible */
+            bottom: `calc(env(safe-area-inset-bottom) + 8px + ${keyboard}px)`,
+            maxHeight: `calc(100dvh - ${keyboard}px - 24px)`,
+          }}
         >
-          <Dialog.Title className="px-1 pb-3 text-[17px] font-bold">{title}</Dialog.Title>
-          {children}
+          <Dialog.Title className="shrink-0 px-1 pb-3 text-[17px] font-bold">{title}</Dialog.Title>
+          <div className="flex min-h-0 flex-col">{children}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

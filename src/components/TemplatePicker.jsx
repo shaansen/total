@@ -41,7 +41,7 @@ export default function TemplatePicker({ open, onOpenChange, current, onPick }) 
 
   return (
     <Sheet open={open} onOpenChange={close} title="Template">
-      <div className="relative mb-2">
+      <div className="relative mb-2 shrink-0">
         <Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink3" />
         <input
           value={query}
@@ -63,7 +63,7 @@ export default function TemplatePicker({ open, onOpenChange, current, onPick }) 
         )}
       </div>
 
-      <div className="max-h-[52dvh] overflow-y-auto rounded-2xl bg-surface2 p-1">
+      <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-surface2 p-1">
         {!query && row('none', 'No template', 'Start with an empty category', !current, () => onPick(null))}
 
         {results.map(({ template, via }) =>
